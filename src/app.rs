@@ -14,9 +14,6 @@ struct QueryParams {
 
 #[component]
 pub fn Main(cx: Scope) -> impl IntoView {
-    // Provides context that manages stylesheets, titles, meta tags, etc.
-    provide_meta_context(cx);
-
     let query_result = use_query::<QueryParams>(cx);
     let query = Signal::derive(cx, move || {
         query_result.with(|query| {
@@ -63,6 +60,9 @@ pub fn Main(cx: Scope) -> impl IntoView {
 
 #[component]
 pub fn App(cx: Scope) -> impl IntoView {
+    // Provides context that manages stylesheets, titles, meta tags, etc.
+    provide_meta_context(cx);
+
     view! { cx,
         // injects a stylesheet into the document <head>
         // id=leptos means cargo-leptos will hot-reload this stylesheet
