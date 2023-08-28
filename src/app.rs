@@ -2,11 +2,6 @@ use leptos::*;
 use leptos_meta::*;
 use leptos_router::*;
 
-// #[server(FakeServerFnVec, "/api")]
-// pub async fn fake_server_function_vec(input: String) -> Result<Vec<char>, ServerFnError> {
-//     Ok(input.chars().collect())
-// }
-
 #[server(FakeServerFnString, "/api")]
 pub async fn fake_server_function_string(input: String) -> Result<String, ServerFnError> {
     Ok(format!("The input was \"{}\"", input))
@@ -39,12 +34,6 @@ pub fn Main(cx: Scope) -> impl IntoView {
         |input| fake_server_function_string(input.unwrap_or_default()),
     );
 
-    // let resource_vec = create_resource(
-    //     cx,
-    //     move || input(),
-    //     |input| fake_server_function_vec(input.unwrap_or_default()),
-    // );
-
     view! { cx,
         <>
             <Form method="GET" action="">
@@ -68,20 +57,6 @@ pub fn Main(cx: Scope) -> impl IntoView {
                     })}
                 </div>
             </Transition>
-            // <Transition fallback=move || view! { cx, <span>Loading</span> }>
-            //     <div class="result">
-            //         {move || resource_vec.with(cx, |result| match result {
-            //             Ok(result) => view! {
-            //                 cx,
-            //                 <>
-            //                     The result is:
-            //                     <output>{result.iter().collect::<String>()}</output>
-            //                 </>
-            //             },
-            //             Err(err) => view! { cx, <>The resource failed to load with: <output><pre>{format!("\"{:?}\"", err)}</pre></output></> },
-            //         })}
-            //     </div>
-            // </Transition>
         </>
     }
 }
