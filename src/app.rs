@@ -1,57 +1,28 @@
 use leptos::*;
-use leptos_meta::*;
-use leptos_router::*;
-
-#[server(FakeServerFnString, "/api")]
-pub async fn fake_server_function_string(input: String) -> Result<String, ServerFnError> {
-    Ok(format!("The input was \"{}\"", input))
-}
-
-#[derive(Params, PartialEq, Clone)]
-struct QueryParams {
-    input: Option<String>,
-}
 
 #[component]
 pub fn Main(cx: Scope) -> impl IntoView {
-    let query_result = use_query::<QueryParams>(cx);
-    let query = Signal::derive(cx, move || {
-        query_result.with(|query| {
-            query
-                .as_ref()
-                .expect("Failed to parse query params")
-                .clone()
-        })
-    });
-    let input = Signal::derive(cx, move || query.with(|query| query.input.clone()));
+    let (input, set_input) = create_signal(cx, "".to_string());
 
     let resource_string = create_resource(
         cx,
         move || input(),
-        |input| fake_server_function_string(input.unwrap_or_default()),
+        |input| async move { format!("The input was \"{}\"", input) },
     );
 
     view! { cx,
         <>
-            <Form method="GET" action="">
+            <form on:submit=|ev| ev.prevent_default()>
                 <label>
                     Input
-                    <input name="input" type="text" value=input />
+                    <input name="input" type="text" value=input on:input=move |ev| set_input(event_target_value(&ev)) />
                 </label>
-                <button type="submit">Submit</button>
-            </Form>
+            </form>
             <Transition fallback=move || view! { cx, <span>Loading</span> }>
                 <div class="result">
-                    {move || resource_string.with(cx, |result| match result {
-                        Ok(result) => view! {
-                            cx,
-                            <>
-                                The result is:
-                                <output>{result}</output>
-                            </>
-                        },
-                        Err(err) => view! { cx, <>The resource failed to load with: <output><pre>{format!("\"{:?}\"", err)}</pre></output></> },
-                    })}
+                    {move || resource_string.with(cx, |result| view! { cx, <>
+                        The result is: <output>{result}</output>
+                    </> })}
                 </div>
             </Transition>
         </>
@@ -60,22 +31,14 @@ pub fn Main(cx: Scope) -> impl IntoView {
 
 #[component]
 pub fn App(cx: Scope) -> impl IntoView {
-    // Provides context that manages stylesheets, titles, meta tags, etc.
-    provide_meta_context(cx);
-
     view! { cx,
         // injects a stylesheet into the document <head>
         // id=leptos means cargo-leptos will hot-reload this stylesheet
-        <Stylesheet id="leptos" href="/pkg/leptos_start.css"/>
-
-        // sets the document title
-        <Title text="Welcome to Leptos"/>
+        <link rel="stylesheet" href="/pkg/leptos_start.css"/>
 
         // content for this welcome page
         <main>
-            <Router>
-                <Main />
-            </Router>
+            <Main />
         </main>
     }
 }
